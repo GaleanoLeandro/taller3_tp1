@@ -30,8 +30,9 @@ const config = {
   flipHorizontal: true // since images are being fed from a webcam
 }
 
-const videoWidth = 600;
-const videoHeight = 500;
+const videoWidth = 600
+const videoHeight = 500
+let trigger = false
 
 /**
  * Loads a the camera
@@ -96,9 +97,15 @@ function detectPoseInRealTime(video, net) {
       nose.then(res => {
         // console.log(res.position)
         if (res.position.x >= 300) {
-          io.sendMessage(1.0)
-        // } else {
-        //   io.sendMessage()
+          if (!trigger) {
+            io.sendMessage(1.0)
+          }
+          trigger = true
+        } else {
+          if (trigger) {
+            io.sendMessage(-1.0)
+          }
+          trigger = false
         }
       })
 

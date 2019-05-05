@@ -8,7 +8,7 @@ const setConfig = () => {
 }
 
 const disconnect = () => {
-    oscServer.kill()
+    oscServer.close()
 }
 
 const sendMessage = obj => {
