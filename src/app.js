@@ -17,6 +17,7 @@
 import * as posenet from '@tensorflow-models/posenet';
 import { drawLine, drawKeypoints, drawSkeleton } from './utils';
 import io from './io'
+import puntosClave from './puntosClave'
 
 io.connect()
 
@@ -32,6 +33,7 @@ const config = {
 
 const videoWidth = 600
 const videoHeight = 500
+
 let trigger = false
 
 /**
@@ -92,22 +94,38 @@ function detectPoseInRealTime(video, net) {
 
     // draw the resulting skeleton and keypoints if over certain confidence scores
     if (pose.score >= config.minPoseConfidence) {
-      let nose = getPoint(pose.keypoints, config.minPartConfidence, 'nose')
 
-      nose.then(res => {
-        // console.log(res.position)
-        if (res.position.x >= 300) {
-          if (!trigger) {
-            io.sendMessage(1.0)
-          }
-          trigger = true
-        } else {
-          if (trigger) {
-            io.sendMessage(-1.0)
-          }
-          trigger = false
+      /* 
+      * Los nombres del objeto retornado por la libreria estan invertidos,
+      * Las extremidades derechas en realidad son las extremidades izquierdas
+      */
+      puntosClave.cuerpo.hombroIzq = getPoint(pose.keypoints, 'rightShoulder')
+      puntosClave.cuerpo.hombroDer = getPoint(pose.keypoints, 'leftShoulder')
+      puntosClave.cuerpo.codoDer = getPoint(pose.keypoints, 'leftElbow')
+      puntosClave.cuerpo.codoIzq = getPoint(pose.keypoints, 'rightElbow')
+
+      if (puntosClave.estaAleteando()) {
+        if (!trigger) {
+          io.sendMessage(1.0)
         }
-      })
+        trigger = true
+      } else {
+        if (trigger) {
+          io.sendMessage(-1.0)
+        }
+        trigger = false
+      }
+      // if (puntosClave.cuerpo.codoIzq.x > 300) {
+      //   if (!trigger) {
+      //     io.sendMessage(1.0)
+      //   }
+      //   trigger = true
+      // } else {
+      //   if (trigger) {
+      //     io.sendMessage(-1.0)
+      //   }
+      //   trigger = false
+      // }
 
       drawLine(ctx, videoWidth, videoHeight)
       drawKeypoints(pose.keypoints, config.minPartConfidence, ctx)
@@ -120,16 +138,12 @@ function detectPoseInRealTime(video, net) {
   poseDetectionFrame();
 }
 
-function getPoint (keypoints, minConfidence, pointName) {
+function getPoint (keypoints, pointName) {
   let point = keypoints.filter(point => {
-    return point.part === pointName && point.score >= minConfidence
+    return point.part === pointName && point.score >= config.minPartConfidence
   })
 
-  return new Promise(resolve => {
-    if (point[0] !== undefined) {
-      resolve(point[0])
-    }
-  })
+  return (point[0] == undefined) ? 0 : point[0].position
 }
 
 function showVideo (ctx) {
