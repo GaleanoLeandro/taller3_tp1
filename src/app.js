@@ -14,8 +14,9 @@
  * limitations under the License.
  * =============================================================================
  */
-import * as posenet from '@tensorflow-models/posenet';
-import { drawLine, drawKeypoints, drawSkeleton } from './utils';
+import * as posenet from '@tensorflow-models/posenet'
+import { drawLine, drawKeypoints, drawSkeleton } from './utils'
+import { guiState, displayGui } from './gui'
 import io from './io'
 import puntosClave from './puntosClave'
 
@@ -104,7 +105,7 @@ function detectPoseInRealTime(video, net) {
       puntosClave.cuerpo.codoDer = getPoint(pose.keypoints, 'leftElbow')
       puntosClave.cuerpo.codoIzq = getPoint(pose.keypoints, 'rightElbow')
 
-      if (puntosClave.estaAleteando()) {
+      if (puntosClave.estaAleteando(guiState)) {
         if (!trigger) {
           io.sendMessage(1.0)
         }
@@ -177,6 +178,7 @@ export async function bindPage() {
   }
 
   detectPoseInRealTime(video, net);
+  displayGui()
 }
 
 navigator.getUserMedia = navigator.getUserMedia ||

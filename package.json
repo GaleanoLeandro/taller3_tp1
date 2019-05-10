@@ -24,6 +24,7 @@
   "dependencies": {
     "@tensorflow-models/posenet": "^1.0.2",
     "@tensorflow/tfjs": "^1.1.0",
+    "dat.gui": "^0.7.6",
     "express": "^4.16.4",
     "node-osc": "^4.1.0",
     "socket.io": "^1.7.4"
